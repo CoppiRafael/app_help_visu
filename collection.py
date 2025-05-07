@@ -9,12 +9,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ESTATISTICA = os.getenv("URL_ENVIO_ESTATISTICA")
-DRAWDOWN_TRACKING = os.getenv("URL_ENVIO_DRAWDOWN_TRACKING")
-BALANCE = os.getenv("URL_ENVIO_BALANCE")
-TRADING_HISTORY = os.getenv("URL_TRADING_HISTORY")
-PNL = os.getenv("URL_LOG_PNL")
-COREOPS_ACCOUNTS = os.getenv("URL_COREOPS_ACCOUNTS")
+ESTATISTICA = st.secrets["URL_ENVIO_ESTATISTICA"]
+DRAWDOWN_TRACKING =st.secrets["URL_ENVIO_DRAWDOWN_TRACKING"]
+BALANCE =st.secrets["URL_ENVIO_BALANCE"]
+TRADING_HISTORY = st.secrets["URL_TRADING_HISTORY"]
+PNL =st.secrets["URL_LOG_PNL"]
+COREOPS_ACCOUNTS =st.secrets["URL_COREOPS_ACCOUNTS"]
 
 
 def request(url: str, bearer: str, account: str) -> pd.DataFrame:
