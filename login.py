@@ -36,7 +36,7 @@ def login():
             </style>
         """, unsafe_allow_html=True)
 
-    password1 = os.getenv("SENHA")
+    password1 = st.secrets["SENHA"]
 
     input_pass = st.text_input("Password", type="password")
 
