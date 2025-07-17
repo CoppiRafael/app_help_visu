@@ -5,16 +5,7 @@ import plotly.express as px
 import requests
 from streamlit_option_menu import option_menu
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-ESTATISTICA = st.secrets["URL_ENVIO_ESTATISTICA"]
-DRAWDOWN_TRACKING =st.secrets["URL_ENVIO_DRAWDOWN_TRACKING"]
-BALANCE =st.secrets["URL_ENVIO_BALANCE"]
-TRADING_HISTORY = st.secrets["URL_TRADING_HISTORY"]
-PNL =st.secrets["URL_LOG_PNL"]
-COREOPS_ACCOUNTS =st.secrets["URL_COREOPS_ACCOUNTS"]
 
 
 def request(url: str, bearer: str, account: str) -> pd.DataFrame:
@@ -22,7 +13,7 @@ def request(url: str, bearer: str, account: str) -> pd.DataFrame:
 
     if url.endswith("Log__Trading_history"):
         params = {"filter[Account][_eq]": account, "limit": -1}
-    elif url.endswith("log_balance") or url.endswith("log__drawdown_tracking") or url.endswith("log_estatistica"):
+    elif url.endswith("log_balance") or url.endswith("log__drawdown_tracking") or url.endswith("log_estatistica") or url.endswith("log_trading"):
         params = {"filter[account_number][_eq]": account, "limit": -1}
     elif url.endswith("Log__Pnl"):
         params = {"filter[Account_number][_eq]": account, "limit": -1}
@@ -58,41 +49,183 @@ def indicador_card(titulo, valor):
 
 def main():
     st.set_page_config(page_title="PropHub", layout="wide")
-    st.markdown("""
-            <style>
-            .main-title {
-                font-size: 60px;
-                font-weight: bold;
-                color: #7f2525;
-                text-align: center;
-                margin-bottom: 10px;
-            }
-            .sub-title {
-                font-size: 24px;
-                color: #7f2525;
-                text-align: center;
-                margin-bottom: 30px;
-            }
-            .info-card {
-                background-color: #441313;
-                padding: 15px;
-                border-radius: 10px;
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                margin-bottom: 10px;
-            }
-            .section-title {
-                font-size: 20px;
-                font-weight: bold;
-                color: #7f2525;
-                margin-top: 20px;
-                margin-bottom: 10px;
-            }
-            </style>
-            <div class="main-title">PropHub</div>
-            <div class="sub-title">Dashboard de Verificação das Coleções do Directus</div>
-        """, unsafe_allow_html=True)
 
-    BEARER = os.getenv("BEARER")
+    if "env" not in st.session_state:
+        st.session_state.env = "blueberry"
+
+    st.markdown(
+    """
+    <style>
+    /* Global adjustments for a sleek dark theme */
+    body {
+        background-color: #1a1a2e; /* Darker, more neutral background */
+        color: #e0e0e0; /* Lighter text for contrast */
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Main Title - PropHub */
+    .main-title {
+        font-size: 68px; /* Slightly larger for impact */
+        font-weight: 700; /* Bolder */
+        color: #400705; /* White/off-white for main title */
+        text-align: center;
+        margin-bottom: 5px; /* Reduced space to subtitle */
+        letter-spacing: 2px; /* A bit of letter spacing for elegance */
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Subtle text shadow for depth */
+        background: linear-gradient(90deg, #400705, #9f5d59); /* Gradient for a modern touch */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.2;
+    }
+
+    /* Subtitle - Dashboard de Verificação das Coleções do Directus */
+    .sub-title {
+        font-size: 26px; /* Slightly larger and more prominent */
+        color: #a0a0a0; /* Softer grey for subtitle */
+        text-align: center;
+        margin-bottom: 50px; /* More space below the subtitle */
+        font-weight: 300; /* Lighter font weight for elegance */
+        letter-spacing: 0.8px;
+        line-height: 1.5;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Very subtle shadow */
+    }
+
+    /* Info Card - (If you decide to use it later, example refined style) */
+    .info-card {
+        background-color: #2a2a3e; /* Darker, sophisticated background for cards */
+        padding: 20px;
+        border-radius: 12px; /* Softer rounded corners */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* More pronounced, soft shadow */
+        margin-bottom: 20px;
+        border: 1px solid #3c3c5a; /* Subtle border for definition */
+    }
+
+    /* Section Title - (If you decide to use it later, example refined style) */
+    .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #f0f2f6; /* Matching main title color for hierarchy */
+        margin-top: 30px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #3a3a4e; /* Subtle underline effect */
+        padding-bottom: 5px;
+        letter-spacing: 1px;
+    }
+    </style>
+    <div class="main-title">PropHub</div>
+    <div class="sub-title">Dashboard de Verificação das Coleções do Directus</div>
+    """,
+    unsafe_allow_html=True,
+    )
+
+    # ─── Novo CSS para o seletor ────────────────────────────────────────
+    st.markdown(
+    """
+    <style>
+    /* Container centralizado com padding e sombra suave */
+    [data-testid="stRadio"] > div {
+        display: flex !important;
+        justify-content: center;
+        gap: 20px; /* Mais espaço entre os botões */
+        margin-bottom: 40px;
+        padding: 12px;
+        border-radius: 18px; /* Cantos mais arredondados para um visual suave */
+        background: #25252b; /* Fundo mais escuro e elegante */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.6); /* Sombra mais profunda */
+        border: 1px solid #3a3a42; /* Borda sutil para definição */
+    }
+
+    /* Esconde o círculo padrão do rádio */
+    [data-testid="stRadio"] input[type="radio"] {
+        display: none;
+    }
+
+    /* Cada label vira um "botão" customizado */
+    [data-testid="stRadio"] label > span {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 36px; /* Mais preenchimento para um toque premium */
+        border-radius: 12px; /* Cantos arredondados nos botões */
+        background: #303036; /* Cor de fundo padrão do botão */
+        color: #c0c0c0; /* Cor de texto padrão, mais clara */
+        font-size: 20px; /* Fonte ligeiramente maior */
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease; /* Transições suaves para todos os efeitos */
+        border: 1px solid #45454d; /* Borda sutil para cada botão */
+        letter-spacing: 0.5px; /* Espaçamento leve entre letras */
+    }
+
+    /* Bolinha custom antes do texto */
+    [data-testid="stRadio"] label > span::before {
+        content: "";
+        width: 18px; /* Bolinha maior */
+        height: 18px;
+        border: 2px solid #777; /* Borda da bolinha */
+        border-radius: 50%;
+        background: transparent;
+        transition: border-color 0.3s, background 0.3s;
+        box-shadow: inset 0 0 0 2px #303036; /* Sombra interna para profundidade */
+    }
+
+    /* Hover sobre o "botão" */
+    [data-testid="stRadio"] label:hover > span {
+        background: #3c3c43; /* Fundo mais claro no hover */
+        color: #ffffff; /* Texto branco no hover */
+        transform: translateY(-3px); /* Leve levantamento */
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4); /* Sombra mais visível no hover */
+    }
+
+    /* Estado selecionado: fundo diferenciado + texto branco */
+    [data-testid="stRadio"] label[data-selected="true"] > span {
+        background: #6a057d; /* Um roxo profundo para o estado selecionado */
+        color: #ffffff; /* Texto branco puro */
+        border-color: #6a057d; /* Borda combinando */
+        box-shadow: 0 6px 16px rgba(106, 5, 125, 0.5); /* Sombra vibrante para destaque */
+        transform: translateY(-1px); /* Mantém um leve levantamento */
+    }
+    /* Bolinha preenchida no selecionado */
+    [data-testid="stRadio"] label[data-selected="true"] > span::before {
+        background: #ffffff; /* Preenchimento branco */
+        border-color: #ffffff; /* Borda branca */
+        box-shadow: none; /* Remove a sombra interna quando preenchida */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
+
+    # --- Seletor de Empresa customizado ────────────────────────────────
+    env_keys = ["blueberry","p4f","demo"]
+    empresa = st.radio(
+        "",
+        env_keys,
+        key="env",
+        horizontal=True,
+        format_func=lambda x: {
+            "blueberry": "Blueberry",
+            #"horizon":   "Horizon",
+            "p4f":       "P4F",
+            "demo":"Demo"
+        }[x]
+    )
+
+
+    # ─── Carrega .env conforme seleção ─────────────────────────────────
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=f".env.{empresa}", override=True)
+
+    ESTATISTICA       = os.getenv("URL_ENVIO_ESTATISTICA")
+    DRAWDOWN_TRACKING = os.getenv("URL_ENVIO_DRAWDOWN_TRACKING")
+    BALANCE           = os.getenv("URL_ENVIO_BALANCE")
+    ORDENS            = os.getenv("URL_ENVIO_TRADING")
+    TRADING_HISTORY   = os.getenv("URL_TRADING_HISTORY")
+    PNL               = os.getenv("URL_LOG_PNL")
+    COREOPS_ACCOUNTS  = os.getenv("URL_COREOPS_ACCOUNTS")
+    BEARER            = os.getenv("BEARER_BB__PROD__")
+
     account = st.text_input("Digite o Account Number:", "1919349374881500200")
 
     if account:
@@ -102,6 +235,7 @@ def main():
         df3 = request(url=PNL, bearer=BEARER, account=account)
         df4 = request(url=DRAWDOWN_TRACKING, bearer=BEARER, account=account)
         df5 = request(url=ESTATISTICA, bearer=BEARER, account=account)
+        df6 = request(url=ORDENS,bearer=BEARER,account=account)
         df_info = request(url=COREOPS_ACCOUNTS, bearer=BEARER, account=account)
 
         if not df_info.empty:
@@ -130,7 +264,8 @@ def main():
             "Balance": df2,
             "PnL": df3,
             "Drawdown Tracking": df4,
-            "Estatística": df5
+            "Estatística": df5,
+            "Ordens":df6
         }
 
         aba = option_menu(
@@ -435,6 +570,10 @@ def main():
                 )
 
                 st.plotly_chart(fig, use_container_width=True)
+
+            if aba == "Ordens":
+                st.dataframe(df6)
+
         else:
             st.warning("Nenhum dado encontrado para essa coleção.")
 
