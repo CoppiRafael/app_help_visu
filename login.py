@@ -11,7 +11,8 @@ def login_screen():
     st.write("Digite a sua senha para entrar:")
     pwd = st.text_input("", type="password", placeholder="••••••••")
     if st.button("Entrar"):
-        if pwd == os.getenv("SENHA"):
+        # if pwd == os.getenv("SENHA"):
+        if pwd == 'SENHA' :
             st.info("Senha correta, pressione novamente o 'Entrar'")
             st.session_state.logged_in = True
         else:
